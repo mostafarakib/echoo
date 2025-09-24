@@ -1,0 +1,18 @@
+{
+  "name": "echoo",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Mostafa Rakib",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "server": "nodemon backend/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  }
+}

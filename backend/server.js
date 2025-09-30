@@ -1,20 +1,25 @@
 import express from "express";
-import chats from "./data/data.js";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import userRoutes from "./routes/userRoutes.js";
+import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 
 dotenv.config();
 
 connectDB();
 const app = express();
+app.use(express.json()); // to accept json data
+
 const PORT = process.env.PORT || 5000;
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
-app.get("/api/chats", (req, res) => {
-  res.send(chats);
-});
+
+app.use("/api/user", userRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

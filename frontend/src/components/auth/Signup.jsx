@@ -128,6 +128,8 @@ function Signup() {
       });
 
       localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading(false);
+      navigate("/chats");
     } catch (error) {
       console.log(error);
       toaster.create({
@@ -138,7 +140,6 @@ function Signup() {
       });
     } finally {
       setLoading(false);
-      navigate("/chats");
     }
   };
   return (

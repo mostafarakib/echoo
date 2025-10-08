@@ -6,11 +6,16 @@ import { Provider } from "./components/ui/provider.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import Homepage from "./pages/Homepage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
+import ChatProvider from "./context/ChatProvider.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <ChatProvider>
+        <App />
+      </ChatProvider>
+    ),
     children: [
       { path: "/", element: <Homepage /> },
       { path: "/chats", element: <ChatPage /> },
@@ -21,9 +26,7 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider>
-      <RouterProvider router={router}>
-        <App />
-      </RouterProvider>
+      <RouterProvider router={router} />
     </Provider>
   </StrictMode>
 );

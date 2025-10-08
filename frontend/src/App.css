@@ -2,8 +2,5 @@
 
 .App {
   min-height: 100dvh;
-  display: flex;
-  justify-content: center;
   background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  padding: 1rem;
 }

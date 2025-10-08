@@ -1,15 +1,30 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Container, Text } from "@chakra-ui/react";
 import Tabs from "../components/ui/tabs";
 import Login from "../components/auth/Login";
 import Signup from "../components/auth/Signup";
 import echooLogo from "../assets/echoo.png";
+import { useNavigate } from "react-router";
 
 function Homepage() {
   const tabs = [
     { label: "Login", value: "login", content: <Login /> },
     { label: "Sign Up", value: "signup", content: <Signup /> },
   ];
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("userInfo"));
+    } catch (error) {
+      console.error("Error parsing user info from local storage", error);
+    }
+
+    if (user) {
+      navigate("/chats", { replace: true });
+    }
+  }, []);
   return (
     <Container w={"lg"} centerContent>
       <Box

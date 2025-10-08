@@ -100,7 +100,7 @@ function Login() {
         <Button
           onClick={() => {
             setEmail("guest@gmail.com");
-            setPassword("guest@123");
+            setPassword("guestuser@321");
           }}
           colorPalette={"red"}
           w={"100%"}

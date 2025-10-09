@@ -21,7 +21,7 @@ const ChatProvider = ({ children }) => {
     if (!parsedUserInfo) {
       navigate("/", { replace: true });
     }
-  }, []);
+  }, [navigate]);
   return (
     <ChatContext.Provider value={{ user, setUser }}>
       {children}

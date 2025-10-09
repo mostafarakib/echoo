@@ -107,19 +107,23 @@ function Signup() {
 
     try {
       const config = {
-        headers: "Content-type: application/json",
+        headers: {
+          "Content-type": "application/json",
+        },
       };
 
-      const { data } = await axios.post(
-        "/api/user",
-        {
-          name,
-          email,
-          password,
-          pic,
-        },
-        config
-      );
+      // Only include pic in the payload if it exists
+      const payload = {
+        name,
+        email,
+        password,
+      };
+
+      if (pic) {
+        payload.pic = pic;
+      }
+
+      const { data } = await axios.post("/api/user", payload, config);
 
       toaster.create({
         description: "Registration Successful",

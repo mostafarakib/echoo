@@ -24,7 +24,7 @@ function Homepage() {
     if (user) {
       navigate("/chats", { replace: true });
     }
-  }, []);
+  }, [navigate]);
   return (
     <Container w={"lg"} centerContent>
       <Box

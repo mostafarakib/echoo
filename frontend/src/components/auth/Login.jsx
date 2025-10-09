@@ -32,7 +32,7 @@ function Login() {
         },
       };
 
-      const data = await axios.post(
+      const { data } = await axios.post(
         "/api/user/login",
         { email, password },
         config
@@ -100,7 +100,7 @@ function Login() {
         <Button
           onClick={() => {
             setEmail("guest@gmail.com");
-            setPassword("guestuser@321");
+            setPassword("guest@321123");
           }}
           colorPalette={"red"}
           w={"100%"}

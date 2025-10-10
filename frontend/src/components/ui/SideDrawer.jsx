@@ -8,6 +8,7 @@ import {
   Input,
   Menu,
   Portal,
+  Spinner,
   Text,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
@@ -34,7 +35,7 @@ function SideDrawer() {
 
   const navigate = useNavigate();
 
-  const { user } = ChatState();
+  const { user, setSelectedChat, chats, setChats } = ChatState();
 
   const notificationItems = [
     { label: "Ascending", value: "asc" },
@@ -81,7 +82,31 @@ function SideDrawer() {
     }
   };
 
-  const accessChat = (userId) => {};
+  const accessChat = async (userId) => {
+    try {
+      setLoadingChat(true);
+
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      const { data } = await axios.post("/api/chat", { userId }, config);
+
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+      setLoading(false);
+      setOpenDrawer(false);
+    } catch (error) {
+      toaster.create({
+        title: "Error fetching the chats",
+        description: error.message,
+        type: "error",
+        closable: true,
+      });
+    }
+  };
   return (
     <>
       <Box
@@ -233,6 +258,9 @@ function SideDrawer() {
                       handleFunction={() => accessChat(user._id)}
                     />
                   ))
+                )}
+                {loadingChat && (
+                  <Spinner marginLeft={"auto"} display={"flex"} />
                 )}
               </Drawer.Body>
               <Drawer.CloseTrigger asChild>

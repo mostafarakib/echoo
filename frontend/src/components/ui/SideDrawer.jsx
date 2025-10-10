@@ -2,7 +2,10 @@ import {
   Avatar,
   Box,
   Button,
+  CloseButton,
+  Drawer,
   Image,
+  Input,
   Menu,
   Portal,
   Text,
@@ -14,6 +17,11 @@ import { LuSearch } from "react-icons/lu";
 import { FaBell, FaChevronDown } from "react-icons/fa";
 import { ChatState } from "../../context/ChatProvider";
 import { dialog } from "./dialog";
+import { useNavigate } from "react-router";
+import { toaster } from "./create-toaster";
+import axios from "axios";
+import ChatLoading from "../ChatLoading";
+import UserListItem from "../UserAvatar/UserListItem";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");
@@ -22,6 +30,9 @@ function SideDrawer() {
   const [loadingChat, setLoadingChat] = useState(false);
   const [notificationValue, setNotificationValue] = useState("asc");
   const [avatarValue, setAvatarValue] = useState("profile");
+  const [openDrawer, setOpenDrawer] = useState(false);
+
+  const navigate = useNavigate();
 
   const { user } = ChatState();
 
@@ -33,6 +44,44 @@ function SideDrawer() {
     { label: "MyProfile", value: "profile" },
     { label: "Log Out", value: "logout" },
   ];
+
+  const logoutHandler = () => {
+    localStorage.removeItem("userInfo");
+    navigate("/", { replace: true });
+  };
+
+  const handleSearch = async () => {
+    if (!search) {
+      toaster.create({
+        description: "Please enter something in search",
+        type: "warning",
+        closable: true,
+      });
+    }
+
+    try {
+      setLoading(true);
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      const { data } = await axios.get(`/api/user?search=${search}`, config);
+      setLoading(false);
+      setSearchResult(data);
+    } catch (error) {
+      toaster.create({
+        title: "Error occured!",
+        description: "Failed to load the search results",
+        type: "error",
+        closable: true,
+      });
+    }
+  };
+
+  const accessChat = (userId) => {};
   return (
     <>
       <Box
@@ -45,7 +94,10 @@ function SideDrawer() {
         backdropBlur={"5px"}
       >
         <Tooltip showArrow content="Search user to start chatting">
-          <Button variant="ghost">
+          <Button
+            variant="ghost"
+            onClick={(e) => setOpenDrawer((prev) => !prev)}
+          >
             <LuSearch />
             <Text display={{ base: "none", md: "flex" }} px={"4"}>
               Search User
@@ -105,29 +157,37 @@ function SideDrawer() {
                               display="flex"
                               flexDirection="column"
                               minH="100%"
+                              alignItems={"center"}
                             >
-                              <Box flex="1">
-                                <Avatar.Root size="2xl" mb={4}>
-                                  <Avatar.Fallback name={user.name} />
-                                  <Avatar.Image src={user.pic} />
-                                </Avatar.Root>
+                              <Image
+                                src={user.pic}
+                                borderRadius={"full"}
+                                alt={user.name}
+                                boxSize={"150px"}
+                              />
+                              <Text mt={"4"}>Email: {user.email}</Text>
 
-                                <Text>Email: {user.email}</Text>
-                              </Box>
-
-                              <Box textAlign="right" mt="4">
-                                <Button onClick={() => dialog.close("a")}>
-                                  Close
-                                </Button>
-                              </Box>
+                              <Button
+                                alignSelf={"flex-end"}
+                                onClick={() => dialog.close("a")}
+                              >
+                                Close
+                              </Button>
                             </Box>
                           ),
                         });
                       }
+                      if (e.value === "logout") {
+                        logoutHandler();
+                      }
                     }}
                   >
                     {avatarItems.map((item) => (
-                      <Menu.RadioItem key={item.value} value={item.value}>
+                      <Menu.RadioItem
+                        cursor={"pointer"}
+                        key={item.value}
+                        value={item.value}
+                      >
                         {item.label}
                         <Menu.ItemIndicator />
                       </Menu.RadioItem>
@@ -140,6 +200,48 @@ function SideDrawer() {
         </div>
       </Box>
       <dialog.Viewport />
+
+      <Drawer.Root
+        open={openDrawer}
+        onOpenChange={(e) => setOpenDrawer(e.open)}
+        placement={"start"}
+      >
+        <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content>
+              <Drawer.Header>
+                <Drawer.Title>Search Users</Drawer.Title>
+              </Drawer.Header>
+              <Drawer.Body>
+                <Box display={"flex"} pb={"2"}>
+                  <Input
+                    placeholder="Search by name or email"
+                    mr={2}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <Button onClick={handleSearch}>Search</Button>
+                </Box>
+                {loading ? (
+                  <ChatLoading />
+                ) : (
+                  searchResult?.map((user) => (
+                    <UserListItem
+                      key={user._id}
+                      user={user}
+                      handleFunction={() => accessChat(user._id)}
+                    />
+                  ))
+                )}
+              </Drawer.Body>
+              <Drawer.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Drawer.CloseTrigger>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root>
     </>
   );
 }

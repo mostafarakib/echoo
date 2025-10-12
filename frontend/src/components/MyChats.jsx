@@ -5,11 +5,11 @@ import { toaster } from "./ui/create-toaster";
 import { Box, Button, Input, Stack, Text } from "@chakra-ui/react";
 import { IoIosAdd } from "react-icons/io";
 import ChatLoading from "./ChatLoading";
-import { getSender } from "../config/ChatLogics";
+import { getSender } from "../config/chatLogics.js";
 import { dialog } from "./ui/dialog";
 import CreateGroupDialog from "./misc/CreateGroupDialog";
 
-function MyChats() {
+function MyChats({ fetchAgain }) {
   const [loggedUser, setLoggedUser] = useState(null);
   const { user, chats, setChats, selectedChat, setSelectedChat } = ChatState();
 
@@ -36,7 +36,7 @@ function MyChats() {
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-  }, []);
+  }, [fetchAgain]);
 
   const onGroupCreateClick = () => {
     dialog.open("groupCreate", {
@@ -46,6 +46,7 @@ function MyChats() {
       ),
     });
   };
+
   return (
     <Box
       display={{ base: selectedChat ? "none" : "flex", md: "flex" }}

@@ -23,6 +23,7 @@ import { toaster } from "../ui/create-toaster";
 import axios from "axios";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserListItem";
+import ProfileDialog from "./ProfileDialog";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");
@@ -177,28 +178,10 @@ function SideDrawer() {
                         dialog.open("profile", {
                           title: user.name,
                           content: (
-                            <Box
-                              textAlign="center"
-                              display="flex"
-                              flexDirection="column"
-                              minH="100%"
-                              alignItems={"center"}
-                            >
-                              <Image
-                                src={user.pic}
-                                borderRadius={"full"}
-                                alt={user.name}
-                                boxSize={"150px"}
-                              />
-                              <Text mt={"4"}>Email: {user.email}</Text>
-
-                              <Button
-                                alignSelf={"flex-end"}
-                                onClick={() => dialog.close("profile")}
-                              >
-                                Close
-                              </Button>
-                            </Box>
+                            <ProfileDialog
+                              user={user}
+                              onClose={() => dialog.close("profile")}
+                            />
                           ),
                         });
                       }

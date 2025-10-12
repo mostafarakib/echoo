@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { ChatState } from "../context/ChatProvider";
 import axios from "axios";
 import { toaster } from "./ui/create-toaster";
-import { Box, Button, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Input, Stack, Text } from "@chakra-ui/react";
 import { IoIosAdd } from "react-icons/io";
 import ChatLoading from "./ChatLoading";
 import { getSender } from "../config/ChatLogics";
+import { dialog } from "./ui/dialog";
+import CreateGroupDialog from "./misc/CreateGroupDialog";
 
 function MyChats() {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -35,6 +37,15 @@ function MyChats() {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
   }, []);
+
+  const onGroupCreateClick = () => {
+    dialog.open("groupCreate", {
+      title: "Create a group",
+      content: (
+        <CreateGroupDialog onClose={() => dialog.close("groupCreate")} />
+      ),
+    });
+  };
   return (
     <Box
       display={{ base: selectedChat ? "none" : "flex", md: "flex" }}
@@ -60,6 +71,7 @@ function MyChats() {
         <Button
           display={"flex"}
           fontSize={{ base: "17px", md: "10px", lg: "15px" }}
+          onClick={() => onGroupCreateClick()}
         >
           New Group Chat <IoIosAdd />
         </Button>

@@ -12,17 +12,17 @@ import {
   Text,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { Tooltip } from "./tooltip";
+import { Tooltip } from "../ui/tooltip";
 import logo from "../../assets/echoo.png";
 import { LuSearch } from "react-icons/lu";
 import { FaBell, FaChevronDown } from "react-icons/fa";
 import { ChatState } from "../../context/ChatProvider";
-import { dialog } from "./dialog";
+import { dialog } from "../ui/dialog";
 import { useNavigate } from "react-router";
-import { toaster } from "./create-toaster";
+import { toaster } from "../ui/create-toaster";
 import axios from "axios";
 import ChatLoading from "../ChatLoading";
-import UserListItem from "../UserAvatar/UserListItem";
+import UserListItem from "../UserListItem";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");
@@ -174,7 +174,7 @@ function SideDrawer() {
                     onValueChange={(e) => {
                       setAvatarValue(e.value);
                       if (e.value === "profile") {
-                        dialog.open("a", {
+                        dialog.open("profile", {
                           title: user.name,
                           content: (
                             <Box
@@ -194,7 +194,7 @@ function SideDrawer() {
 
                               <Button
                                 alignSelf={"flex-end"}
-                                onClick={() => dialog.close("a")}
+                                onClick={() => dialog.close("profile")}
                               >
                                 Close
                               </Button>

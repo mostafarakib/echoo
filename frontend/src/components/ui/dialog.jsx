@@ -9,7 +9,11 @@ const dialog = createOverlay((props) => {
         <Dialog.Positioner alignItems={"center"}>
           <Dialog.Content>
             {title && (
-              <Dialog.Header justifyContent={"center"}>
+              <Dialog.Header
+                fontFamily={"Work sans"}
+                fontSize={"35px"}
+                justifyContent={"center"}
+              >
                 <Dialog.Title>{title}</Dialog.Title>
               </Dialog.Header>
             )}

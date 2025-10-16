@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 
 dotenv.config();
@@ -19,7 +20,9 @@ app.get("/", (req, res) => {
 
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/message", messageRoutes);
 
+//error handling middlewares
 app.use(notFound);
 app.use(errorHandler);
 

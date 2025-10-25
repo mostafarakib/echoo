@@ -11,12 +11,17 @@ import axios from "axios";
 import { toaster } from "./ui/create-toaster";
 import "./styles.css";
 import ScrollableChat from "./ScrollableChat";
+import { io } from "socket.io-client";
+
+const ENDPOINT = "http://localhost:5000";
+let socket, selectedChatCompare;
 
 function SingleChat() {
   const [fetchAgain, setFetchAgain] = useState(false);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const [socketConnected, setSocketConnected] = useState(false);
 
   const { user, selectedChat, setSelectedChat } = ChatState();
 
@@ -36,9 +41,9 @@ function SingleChat() {
         config
       );
 
-      console.log(messages);
       setMessages(data);
       setLoading(false);
+      socket.emit("join chat", selectedChat._id);
     } catch (error) {
       toaster.create({
         title: "Failed to Load the Messages",
@@ -50,8 +55,31 @@ function SingleChat() {
   };
 
   useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", user);
+    socket.on("connection", () => {
+      setSocketConnected(true);
+    });
+  }, []);
+
+  useEffect(() => {
     fetchMessages();
+
+    selectedChatCompare = selectedChat;
   }, [selectedChat]);
+
+  useEffect(() => {
+    socket.on("message received", (newMessageReceived) => {
+      if (
+        !selectedChatCompare ||
+        selectedChatCompare._id !== newMessageReceived.chat._id
+      ) {
+        // give notification
+      } else {
+        setMessages((prev) => [...prev, newMessageReceived]);
+      }
+    });
+  });
 
   const sendMessage = async (event) => {
     event.preventDefault();
@@ -78,6 +106,7 @@ function SingleChat() {
 
         console.log(data);
 
+        socket.emit("new message", data);
         setMessages((prev) => [...prev, data]);
       } catch (error) {
         toaster.create({
@@ -92,6 +121,7 @@ function SingleChat() {
   const typingHandler = (event) => {
     setNewMessage(event.target.value);
   };
+
   return (
     <>
       {selectedChat ? (
@@ -115,13 +145,17 @@ function SingleChat() {
             </IconButton>
             {!selectedChat.isGroupChat ? (
               <>
-                {selectedChat?.users[1]?.name.toUpperCase()}
+                {selectedChat?.users
+                  .find((u) => u._id !== user._id)
+                  .name.toUpperCase()}
                 <IconButton
                   variant={"surface"}
                   marginLeft={"auto"}
                   onClick={() =>
                     dialog.open("viewSender", {
-                      title: "Create a group",
+                      title: selectedChat.users
+                        .find((u) => u._id !== user._id)
+                        .name.toUpperCase(),
                       content: (
                         <ProfileDialog
                           user={getFUllSender(user, selectedChat.users)}

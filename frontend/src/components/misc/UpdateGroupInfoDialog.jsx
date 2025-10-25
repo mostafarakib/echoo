@@ -6,7 +6,7 @@ import UserListItem from "../UserListItem";
 import axios from "axios";
 import { toaster } from "../ui/create-toaster";
 
-function UpdateGroupInfoDialog({ fetchAgain, setFetchAgain, fetchMessages }) {
+function UpdateGroupInfoDialog({ fetchAgain, setFetchAgain }) {
   const [searchResult, setSearchResult] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ function UpdateGroupInfoDialog({ fetchAgain, setFetchAgain, fetchMessages }) {
         : setSelectedChat(data);
 
       setFetchAgain(!fetchAgain);
-      fetchMessages();
+      // fetchMessages();
     } catch (error) {
       toaster.create({
         title: "Failed to remove user from the group",

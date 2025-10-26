@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChatState } from "../context/ChatProvider";
 import { Box, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
@@ -14,7 +14,6 @@ import ScrollableChat from "./ScrollableChat";
 import { io } from "socket.io-client";
 
 const ENDPOINT = "http://localhost:5000";
-let socket, selectedChatCompare;
 
 function SingleChat() {
   const [fetchAgain, setFetchAgain] = useState(false);
@@ -24,6 +23,11 @@ function SingleChat() {
   const [socketConnected, setSocketConnected] = useState(false);
 
   const { user, selectedChat, setSelectedChat } = ChatState();
+
+  // refs to hold persistent values across renders
+  const socketRef = useRef(null);
+  const selectedChatRef = useRef(null);
+  const joinRetryRef = useRef(null);
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -43,7 +47,20 @@ function SingleChat() {
 
       setMessages(data);
       setLoading(false);
-      socket.emit("join chat", selectedChat._id);
+
+      if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.emit("join chat", selectedChat._id);
+      } else {
+        // retry join until socket connects
+        if (joinRetryRef.current) clearInterval(joinRetryRef.current);
+        joinRetryRef.current = setInterval(() => {
+          if (socketRef.current && socketRef.current.connected) {
+            socketRef.current.emit("join chat", selectedChat._id);
+            clearInterval(joinRetryRef.current);
+            joinRetryRef.current = null;
+          }
+        }, 200);
+      }
     } catch (error) {
       toaster.create({
         title: "Failed to Load the Messages",
@@ -55,67 +72,94 @@ function SingleChat() {
   };
 
   useEffect(() => {
-    socket = io(ENDPOINT);
-    socket.emit("setup", user);
-    socket.on("connection", () => {
+    socketRef.current = io(ENDPOINT, {
+      transports: ["websocket"],
+    });
+
+    if (socketRef.current && user) {
+      socketRef.current.emit("setup", user);
+    }
+    socketRef.current.on("connected", () => {
       setSocketConnected(true);
     });
-  }, []);
 
-  useEffect(() => {
-    fetchMessages();
-
-    selectedChatCompare = selectedChat;
-  }, [selectedChat]);
-
-  useEffect(() => {
-    socket.on("message received", (newMessageReceived) => {
-      if (
-        !selectedChatCompare ||
-        selectedChatCompare._id !== newMessageReceived.chat._id
-      ) {
-        // give notification
+    const handleMessageReceived = (newMessageReceived) => {
+      // if this message belongs to currently open chat, append, else show notification
+      const current = selectedChatRef.current;
+      if (!current || current._id !== newMessageReceived.chat._id) {
+        // notification logic
       } else {
         setMessages((prev) => [...prev, newMessageReceived]);
       }
-    });
-  });
+    };
+
+    socketRef.current.on("message received", handleMessageReceived);
+
+    // cleanup on unmount
+    return () => {
+      if (joinRetryRef.current) {
+        clearInterval(joinRetryRef.current);
+        joinRetryRef.current = null;
+      }
+      if (socketRef.current) {
+        socketRef.current.off("connected");
+        socketRef.current.off("message received", handleMessageReceived);
+        socketRef.current.off("connect_error");
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [user]);
+
+  useEffect(() => {
+    selectedChatRef.current = selectedChat;
+    fetchMessages();
+  }, [selectedChat]);
 
   const sendMessage = async (event) => {
     event.preventDefault();
 
-    if (newMessage) {
-      try {
-        const config = {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-        };
+    if (!newMessage) return;
 
-        setNewMessage("");
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
 
-        const { data } = await axios.post(
-          "/api/message",
-          {
-            content: newMessage,
-            chatId: selectedChat._id,
-          },
-          config
-        );
+      const messageToSend = newMessage;
+      setNewMessage("");
 
-        console.log(data);
+      const { data } = await axios.post(
+        "/api/message",
+        {
+          content: messageToSend,
+          chatId: selectedChat._id,
+        },
+        config
+      );
 
-        socket.emit("new message", data);
-        setMessages((prev) => [...prev, data]);
-      } catch (error) {
-        toaster.create({
-          title: "Failed to send the message",
-          description: error.message,
-          type: "error",
-          closable: true,
-        });
+      setMessages((prev) => [...prev, data]);
+
+      const payload = {
+        ...data,
+        chat:
+          data.chat && data.chat.users ? data.chat : selectedChatRef.current,
+      };
+      if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.emit("new message", payload);
+      } else {
+        console.warn("socket not ready; message emitted only locally");
       }
+    } catch (error) {
+      toaster.create({
+        title: "Failed to send the message",
+        description: error.message,
+        type: "error",
+        closable: true,
+      });
     }
   };
   const typingHandler = (event) => {

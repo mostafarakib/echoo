@@ -21,6 +21,7 @@ function SingleChat() {
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   const { user, selectedChat, setSelectedChat } = ChatState();
 
@@ -28,6 +29,10 @@ function SingleChat() {
   const socketRef = useRef(null);
   const selectedChatRef = useRef(null);
   const joinRetryRef = useRef(null);
+
+  const typingRef = useRef(false);
+  const lastTypingTimeRef = useRef(null);
+  const typingTimerRef = useRef(null);
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -79,9 +84,7 @@ function SingleChat() {
     if (socketRef.current && user) {
       socketRef.current.emit("setup", user);
     }
-    socketRef.current.on("connected", () => {
-      setSocketConnected(true);
-    });
+    socketRef.current.on("connected", () => setSocketConnected(true));
 
     const handleMessageReceived = (newMessageReceived) => {
       // if this message belongs to currently open chat, append, else show notification
@@ -95,6 +98,9 @@ function SingleChat() {
 
     socketRef.current.on("message received", handleMessageReceived);
 
+    socketRef.current.on("typing", () => setIsTyping(true));
+    socketRef.current.on("stop typing", () => setIsTyping(false));
+
     // cleanup on unmount
     return () => {
       if (joinRetryRef.current) {
@@ -104,7 +110,8 @@ function SingleChat() {
       if (socketRef.current) {
         socketRef.current.off("connected");
         socketRef.current.off("message received", handleMessageReceived);
-        socketRef.current.off("connect_error");
+        socketRef.current.off("typing");
+        socketRef.current.off("stop typing");
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -121,6 +128,7 @@ function SingleChat() {
 
     if (!newMessage) return;
 
+    socketRef.current.emit("stop typing", selectedChat._id);
     try {
       const config = {
         headers: {
@@ -141,7 +149,10 @@ function SingleChat() {
         config
       );
 
-      setMessages((prev) => [...prev, data]);
+      setMessages((prev) => {
+        if (prev.find((m) => m._id === data._id)) return prev;
+        return [...prev, data];
+      });
 
       const payload = {
         ...data,
@@ -162,8 +173,32 @@ function SingleChat() {
       });
     }
   };
+
+  const TYPING_TIMER_LENGTH = 3000; // ms
+
   const typingHandler = (event) => {
     setNewMessage(event.target.value);
+
+    if (!socketRef.current || !socketConnected) return;
+
+    if (!typingRef.current) {
+      typingRef.current = true;
+      socketRef.current.emit("typing", selectedChatRef.current._id);
+    }
+
+    lastTypingTimeRef.current = new Date().getTime();
+
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+
+    typingTimerRef.current = setTimeout(() => {
+      let timeNow = new Date().getTime();
+      let timeDiff = timeNow - (lastTypingTimeRef.current || 0);
+
+      if (timeDiff >= TYPING_TIMER_LENGTH && typingRef.current) {
+        socketRef.current.emit("stop typing", selectedChatRef.current._id);
+        typingRef.current = false;
+      }
+    }, TYPING_TIMER_LENGTH);
   };
 
   return (
@@ -263,6 +298,23 @@ function SingleChat() {
             )}
 
             <Box as={"form"} onSubmit={sendMessage}>
+              {isTyping && (
+                <Box
+                  background={"white"}
+                  display="inline-flex"
+                  alignItems="center"
+                  borderRadius="xl"
+                  px={2.5}
+                  py={2.5}
+                  mb={2}
+                >
+                  <Box display="flex" gap={1}>
+                    <span className="typing-dot"></span>
+                    <span className="typing-dot"></span>
+                    <span className="typing-dot"></span>
+                  </Box>
+                </Box>
+              )}
               <Input
                 variant={"outline"}
                 placeholder="Enter a message..."

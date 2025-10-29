@@ -42,7 +42,9 @@ io.on("connection", (socket) => {
   console.log("Connected to socket.io");
 
   socket.on("setup", (userData) => {
+    if (!userData || !userData._id) return;
     socket.join(userData._id);
+    socket.data.userId = String(userData._id);
     socket.emit("connected");
   });
 
@@ -50,6 +52,9 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log("User joined room: " + room);
   });
+
+  socket.on("typing", (room) => socket.to(room).emit("typing"));
+  socket.on("stop typing", (room) => socket.to(room).emit("stop typing"));
 
   socket.on("new message", (newMessage) => {
     let chat = newMessage.chat;
@@ -63,7 +68,11 @@ io.on("connection", (socket) => {
     });
   });
 
-  // socket.on("disconnect", () => {
-  //   console.log("User disconnected");
-  // });
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.data?.userId || socket.id);
+    // leave personal room if set
+    if (socket.data?.userId) {
+      socket.leave(socket.data.userId);
+    }
+  });
 });

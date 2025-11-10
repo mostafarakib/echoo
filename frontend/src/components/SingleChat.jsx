@@ -11,9 +11,6 @@ import axios from "axios";
 import { toaster } from "./ui/create-toaster";
 import "./styles.css";
 import ScrollableChat from "./ScrollableChat";
-import { io } from "socket.io-client";
-
-const ENDPOINT = "http://localhost:5000";
 
 function SingleChat() {
   const [fetchAgain, setFetchAgain] = useState(false);
@@ -23,10 +20,15 @@ function SingleChat() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const {
+    user,
+    selectedChat,
+    setSelectedChat,
+    notifications,
+    setNotifications,
+    socketRef,
+  } = ChatState();
 
-  // refs to hold persistent values across renders
-  const socketRef = useRef(null);
   const selectedChatRef = useRef(null);
   const joinRetryRef = useRef(null);
 
@@ -53,7 +55,7 @@ function SingleChat() {
       setMessages(data);
       setLoading(false);
 
-      if (socketRef.current && socketRef.current.connected) {
+      if (socketRef?.current && socketRef.current.connected) {
         socketRef.current.emit("join chat", selectedChat._id);
       } else {
         // retry join until socket connects
@@ -77,50 +79,73 @@ function SingleChat() {
   };
 
   useEffect(() => {
-    socketRef.current = io(ENDPOINT, {
-      transports: ["websocket"],
-    });
+    const socket = socketRef.current;
+    if (!socket) return;
 
-    if (socketRef.current && user) {
-      socketRef.current.emit("setup", user);
-    }
-    socketRef.current.on("connected", () => setSocketConnected(true));
+    // socketRef.current.on("connected", () => setSocketConnected(true));
 
     const handleMessageReceived = (newMessageReceived) => {
-      // if this message belongs to currently open chat, append, else show notification
       const current = selectedChatRef.current;
       if (!current || current._id !== newMessageReceived.chat._id) {
-        // notification logic
+        setFetchAgain((prev) => !prev);
       } else {
-        setMessages((prev) => [...prev, newMessageReceived]);
+        setMessages((prev) => {
+          if (prev.find((m) => m._id === newMessageReceived._id)) return prev;
+          return [...prev, newMessageReceived];
+        });
       }
     };
 
-    socketRef.current.on("message received", handleMessageReceived);
+    const handleTyping = () => setIsTyping(true);
+    const handleStopTyping = () => setIsTyping(false);
+    const handleConnected = () => setSocketConnected(true);
 
-    socketRef.current.on("typing", () => setIsTyping(true));
-    socketRef.current.on("stop typing", () => setIsTyping(false));
+    socket.on("connected", handleConnected);
+    socket.on("message received", handleMessageReceived);
+    socket.on("typing", handleTyping);
+    socket.on("stop typing", handleStopTyping);
 
     // cleanup on unmount
     return () => {
-      if (joinRetryRef.current) {
-        clearInterval(joinRetryRef.current);
-        joinRetryRef.current = null;
-      }
-      if (socketRef.current) {
-        socketRef.current.off("connected");
-        socketRef.current.off("message received", handleMessageReceived);
-        socketRef.current.off("typing");
-        socketRef.current.off("stop typing");
-        socketRef.current.disconnect();
-        socketRef.current = null;
+      if (socket) {
+        socket.off("connected");
+        socket.off("message received", handleMessageReceived);
+        socket.off("typing");
+        socket.off("stop typing");
       }
     };
-  }, [user]);
+  }, [socketRef, selectedChat]);
 
   useEffect(() => {
     selectedChatRef.current = selectedChat;
     fetchMessages();
+
+    const markReadForChat = async () => {
+      if (!selectedChat) return;
+
+      try {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        };
+        const { data } = await axios.post(
+          "/api/notification/mark-read",
+          { chatId: selectedChat._id },
+          config
+        );
+        if (data && data.unread) setNotifications(data.unread);
+        else
+          setNotifications((prev) =>
+            prev.filter((n) => n.chat._id !== selectedChat._id)
+          );
+      } catch (err) {
+        console.error("markReadForChat error:", err);
+      }
+    };
+
+    markReadForChat();
   }, [selectedChat]);
 
   const sendMessage = async (event) => {
@@ -128,8 +153,10 @@ function SingleChat() {
 
     if (!newMessage) return;
 
-    socketRef.current.emit("stop typing", selectedChat._id);
     try {
+      if (socketRef?.current) {
+        socketRef.current.emit("stop typing", selectedChat._id);
+      }
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +186,8 @@ function SingleChat() {
         chat:
           data.chat && data.chat.users ? data.chat : selectedChatRef.current,
       };
-      if (socketRef.current && socketRef.current.connected) {
+
+      if (socketRef?.current && socketRef.current.connected) {
         socketRef.current.emit("new message", payload);
       } else {
         console.warn("socket not ready; message emitted only locally");

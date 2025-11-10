@@ -11,7 +11,7 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tooltip } from "../ui/tooltip";
 import logo from "../../assets/echoo.png";
 import { LuSearch } from "react-icons/lu";
@@ -24,24 +24,28 @@ import axios from "axios";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserListItem";
 import ProfileDialog from "./ProfileDialog";
+import { getSender } from "../../config/chatLogics";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
-  const [notificationValue, setNotificationValue] = useState("asc");
   const [avatarValue, setAvatarValue] = useState("profile");
   const [openDrawer, setOpenDrawer] = useState(false);
 
   const navigate = useNavigate();
 
-  const { user, setSelectedChat, chats, setChats } = ChatState();
+  const {
+    user,
+    setSelectedChat,
+    chats,
+    setChats,
+    notifications,
+    setNotifications,
+    socketRef,
+  } = ChatState();
 
-  const notificationItems = [
-    { label: "Ascending", value: "asc" },
-    { label: "Descending", value: "desc" },
-  ];
   const avatarItems = [
     { label: "MyProfile", value: "profile" },
     { label: "Log Out", value: "logout" },
@@ -108,6 +112,61 @@ function SideDrawer() {
       });
     }
   };
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const config = {
+          headers: { Authorization: `Bearer ${user.token}` },
+        };
+
+        const { data } = await axios.get("/api/notification", config);
+        if (Array.isArray(data)) setNotifications(data);
+        else if (data.unread) setNotifications(data.unread);
+      } catch (error) {
+        console.warn("loadNotifications err:", error.message || error);
+      }
+    };
+
+    if (user) loadNotifications();
+  }, []);
+
+  const onCLickNotification = async (item) => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const { data } = await axios.post(
+        "/api/notification/mark-read",
+        {
+          chatId: item.chat._id,
+        },
+        config
+      );
+
+      if (data && data.unread) {
+        setNotifications(data.unread);
+      } else {
+        setNotifications((prev) =>
+          prev.filter((n) => n.chat._id !== item.chat._id)
+        );
+      }
+
+      // open the chat
+      setSelectedChat(item.chat);
+
+      // ensure socket joins the chat room
+      if (socketRef?.current && socketRef.current.connected) {
+        socketRef.current.emit("join chat", item.chat._id);
+      }
+    } catch (error) {
+      console.error("onClickNotification error:", error);
+    }
+  };
   return (
     <>
       <Box
@@ -137,22 +196,47 @@ function SideDrawer() {
             <Menu.Trigger asChild>
               <Button variant={"plain"} size="sm" p={"2"} m={"1"}>
                 <FaBell />
+                {notifications.length > 0 && (
+                  <Text
+                    fontSize="x-small"
+                    position="absolute"
+                    top="0"
+                    right="0"
+                    bg="red.500"
+                    color="white"
+                    borderRadius="full"
+                    px={2}
+                  >
+                    {notifications.length}
+                  </Text>
+                )}
               </Button>
             </Menu.Trigger>
             <Portal>
               <Menu.Positioner>
                 <Menu.Content minW="10rem">
-                  <Menu.RadioItemGroup
-                    value={notificationValue}
-                    onValueChange={(e) => notificationValue(e.value)}
-                  >
-                    {notificationItems.map((item) => (
-                      <Menu.RadioItem key={item.value} value={item.value}>
-                        {item.label}
-                        <Menu.ItemIndicator />
-                      </Menu.RadioItem>
-                    ))}
-                  </Menu.RadioItemGroup>
+                  {notifications.length === 0 ? (
+                    <Text px={"2"} py={"2"}>
+                      No New Messages
+                    </Text>
+                  ) : (
+                    notifications.map((item) => (
+                      <Menu.Item
+                        cursor={"pointer"}
+                        key={item._id}
+                        onClick={() => {
+                          onCLickNotification(item);
+                        }}
+                      >
+                        {item.chat.isGroupChat
+                          ? `New Message in ${item.chat.chatName}`
+                          : `New Message from ${getSender(
+                              user,
+                              item.chat.users
+                            )}`}
+                      </Menu.Item>
+                    ))
+                  )}
                 </Menu.Content>
               </Menu.Positioner>
             </Portal>

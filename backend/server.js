@@ -4,8 +4,10 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 import { Server } from "socket.io";
+import { initSocket } from "./config/socket.js";
 
 dotenv.config();
 
@@ -22,6 +24,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/notification", notificationRoutes);
 
 //error handling middlewares
 app.use(notFound);
@@ -31,7 +34,7 @@ const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-const io = new Server(server, {
+const io = initSocket(server, {
   pingTimeout: 60000,
   cors: {
     origin: "http://localhost:5173",

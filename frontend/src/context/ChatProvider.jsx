@@ -42,9 +42,27 @@ const ChatProvider = ({ children }) => {
       setNotifications((prev) => {
         if (!payload || !payload._id) return prev;
 
-        if (prev.find((n) => n._id === payload._id)) return prev;
+        // Find if we already have a notification from this same sender (and chat)
+        const existingIndex = prev.findIndex(
+          (n) =>
+            n.sender?._id === payload.sender?._id &&
+            n.chat?._id === payload.chat?._id
+        );
 
-        return [...prev, payload];
+        // If this notification is meant to replace an older one
+        if (payload.type === "replace" && existingIndex !== -1) {
+          const updated = [...prev];
+          updated[existingIndex] = payload;
+          return updated;
+        }
+
+        // If there's no existing notification from this sender/chat, add it
+        if (existingIndex === -1) {
+          return [payload, ...prev];
+        }
+
+        // Otherwise, ignore duplicate
+        return prev;
       });
     });
 
@@ -54,7 +72,7 @@ const ChatProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${parsedUserInfo.token}` },
         };
         const { data } = await axios.get("/api/notification", config);
-        // controller returns unread by default; handle both shapes
+        // controller returns unread by default
         if (Array.isArray(data)) setNotifications(data);
         else if (Array.isArray(data.unread)) setNotifications(data.unread);
       } catch (err) {

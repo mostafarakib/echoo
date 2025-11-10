@@ -34,7 +34,6 @@ const sendMessage = async (req, res) => {
       latestMessage: message._id,
     });
 
-    // --- notifications: prepare recipients (all users in chat except sender)
     const recipients = (message.chat?.users || [])
       .filter((u) => String(u._id) !== String(req.user._id))
       .map((u) => String(u._id));
@@ -43,25 +42,22 @@ const sendMessage = async (req, res) => {
     let insertedNotifs = [];
 
     if (recipients.length > 0) {
-      const existing = await Notification.find({
+      // delete existing unread notifications for this sender/chat/recipients
+      await Notification.deleteMany({
+        sender: req.user._id,
+        chat: chatId,
         recipient: { $in: recipients },
+        isRead: false,
+      });
+
+      // Then create one new notification per recipient
+      toInsert = recipients.map((recipientId) => ({
+        recipient: recipientId,
+        sender: req.user._id,
+        chat: message.chat._id,
         message: message._id,
-      }).select("recipient");
-
-      const existingRecipientSet = new Set(
-        existing.map((n) => String(n.recipient))
-      );
-
-      // build docs for recipients that don't already have a notification for this message
-      toInsert = recipients
-        .filter((r) => !existingRecipientSet.has(r))
-        .map((recipientId) => ({
-          recipient: recipientId,
-          sender: req.user._id,
-          chat: message.chat._id,
-          message: message._id,
-          isRead: false,
-        }));
+        isRead: false,
+      }));
     }
 
     if (toInsert.length > 0) {
@@ -91,10 +87,10 @@ const sendMessage = async (req, res) => {
         },
         createdAt: new Date().toISOString(),
       };
-      // Emit to all inserted recipients (and also to those that already had notifications? We prefer to notify recipients irrespective)
+      // Emit to all inserted recipients
       const allToNotify = [...new Set([...recipients])];
+
       allToNotify.forEach((recipientId) => {
-        // build a payload id if we inserted a specific doc for them (find inserted doc)
         const insertedForThis = insertedNotifs.find(
           (n) => String(n.recipient) === String(recipientId)
         );
@@ -104,11 +100,11 @@ const sendMessage = async (req, res) => {
             : `${message._id}-${recipientId}`, // fallback id
           ...payloadBase,
           recipient: recipientId,
+          type: "replace",
         };
         try {
           io.to(String(recipientId)).emit("notification", payload);
         } catch (emitErr) {
-          // don't fail the whole request if emit fails
           console.error("emit notification error to", recipientId, emitErr);
         }
       });

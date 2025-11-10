@@ -91,7 +91,6 @@ const ChatProvider = ({ children }) => {
     };
   }, [navigate]);
 
-  console.log(notifications);
   return (
     <ChatContext.Provider
       value={{

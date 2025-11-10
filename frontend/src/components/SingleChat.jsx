@@ -96,14 +96,25 @@ function SingleChat() {
       }
     };
 
-    const handleTyping = () => setIsTyping(true);
-    const handleStopTyping = () => setIsTyping(false);
     const handleConnected = () => setSocketConnected(true);
 
     socket.on("connected", handleConnected);
     socket.on("message received", handleMessageReceived);
-    socket.on("typing", handleTyping);
-    socket.on("stop typing", handleStopTyping);
+    socket.on("typing", (data) => {
+      if (data.room === selectedChat._id && data.senderId !== user._id) {
+        setIsTyping(true);
+      }
+    });
+
+    socket.on("stop typing", (data) => {
+      if (data.room === selectedChat._id && data.senderId !== user._id) {
+        setIsTyping(false);
+      }
+    });
+
+    if (selectedChat) {
+      socket.emit("open chat", selectedChat._id);
+    }
 
     // cleanup on unmount
     return () => {
@@ -112,10 +123,14 @@ function SingleChat() {
         socket.off("message received", handleMessageReceived);
         socket.off("typing");
         socket.off("stop typing");
+        if (selectedChat) {
+          socket.emit("close chat");
+        }
       }
     };
-  }, [socketRef, selectedChat]);
+  }, [socketRef, selectedChat, user._id]);
 
+  // mark notifications read when chat opens
   useEffect(() => {
     selectedChatRef.current = selectedChat;
     fetchMessages();
@@ -211,7 +226,7 @@ function SingleChat() {
 
     if (!typingRef.current) {
       typingRef.current = true;
-      socketRef.current.emit("typing", selectedChatRef.current._id);
+      socketRef.current.emit("typing", selectedChatRef.current._id, user._id);
     }
 
     lastTypingTimeRef.current = new Date().getTime();
@@ -223,7 +238,11 @@ function SingleChat() {
       let timeDiff = timeNow - (lastTypingTimeRef.current || 0);
 
       if (timeDiff >= TYPING_TIMER_LENGTH && typingRef.current) {
-        socketRef.current.emit("stop typing", selectedChatRef.current._id);
+        socketRef.current.emit(
+          "stop typing",
+          selectedChatRef.current._id,
+          user._id
+        );
         typingRef.current = false;
       }
     }, TYPING_TIMER_LENGTH);

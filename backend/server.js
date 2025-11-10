@@ -56,8 +56,22 @@ io.on("connection", (socket) => {
     console.log("User joined room: " + room);
   });
 
-  socket.on("typing", (room) => socket.to(room).emit("typing"));
-  socket.on("stop typing", (room) => socket.to(room).emit("stop typing"));
+  // Track which chat a user is currently viewing
+  socket.on("open chat", (chatId) => {
+    socket.data.activeChat = chatId;
+  });
+
+  // Clear when leaving or switching to another chat
+  socket.on("close chat", () => {
+    socket.data.activeChat = null;
+  });
+
+  socket.on("typing", (room, senderId) =>
+    socket.to(room).emit("typing", { room, senderId })
+  );
+  socket.on("stop typing", (room, senderId) =>
+    socket.to(room).emit("stop typing", { room, senderId })
+  );
 
   socket.on("new message", (newMessage) => {
     let chat = newMessage.chat;
@@ -67,7 +81,11 @@ io.on("connection", (socket) => {
     chat.users.forEach((user) => {
       if (user._id == newMessage.sender._id) return;
 
+      // emit to user's personal room
       io.to(user._id).emit("message received", newMessage);
+
+      // also emit to the chat room (if they have it open)
+      io.to(chat._id).emit("message received", newMessage);
     });
   });
 

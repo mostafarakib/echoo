@@ -42,6 +42,18 @@ const sendMessage = async (req, res) => {
     let insertedNotifs = [];
 
     if (recipients.length > 0) {
+      const io = getIO();
+      const connectedSockets = await io.fetchSockets();
+
+      const recipientsToNotify = recipients.filter((recipientId) => {
+        const userSocket = connectedSockets.find(
+          (s) => String(s.data?.userId) === String(recipientId)
+        );
+
+        // only notify if user not viewing this chat
+        return !userSocket || userSocket.data.activeChat !== String(chatId);
+      });
+
       // delete existing unread notifications for this sender/chat/recipients
       await Notification.deleteMany({
         sender: req.user._id,
@@ -51,7 +63,7 @@ const sendMessage = async (req, res) => {
       });
 
       // Then create one new notification per recipient
-      toInsert = recipients.map((recipientId) => ({
+      toInsert = recipientsToNotify.map((recipientId) => ({
         recipient: recipientId,
         sender: req.user._id,
         chat: message.chat._id,
@@ -87,8 +99,10 @@ const sendMessage = async (req, res) => {
         },
         createdAt: new Date().toISOString(),
       };
-      // Emit to all inserted recipients
-      const allToNotify = [...new Set([...recipients])];
+      // Emit only to recipients who got notifications
+      const allToNotify = [
+        ...new Set(toInsert.map((n) => String(n.recipient))),
+      ];
 
       allToNotify.forEach((recipientId) => {
         const insertedForThis = insertedNotifs.find(

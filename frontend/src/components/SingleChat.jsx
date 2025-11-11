@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ChatState } from "../context/ChatProvider";
 import { Box, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
-import { getFUllSender, getSender } from "../config/chatLogics";
+import { getFUllSender } from "../config/chatLogics";
 import ProfileDialog from "./misc/ProfileDialog";
 import { dialog } from "./ui/dialog";
 import { MdAssignmentInd } from "react-icons/md";
@@ -20,14 +20,8 @@ function SingleChat() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  const {
-    user,
-    selectedChat,
-    setSelectedChat,
-    notifications,
-    setNotifications,
-    socketRef,
-  } = ChatState();
+  const { user, selectedChat, setSelectedChat, setNotifications, socketRef } =
+    ChatState();
 
   const selectedChatRef = useRef(null);
   const joinRetryRef = useRef(null);

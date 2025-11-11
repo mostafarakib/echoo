@@ -65,10 +65,9 @@ function MyChats({ fetchAgain }) {
         fontFamily={"Work sans"}
         display={"flex"}
         width={"100%"}
-        justifyContent={"space-between"}
+        justifyContent={"right"}
         alignItems={"center"}
       >
-        My Chats
         <Button
           display={"flex"}
           fontSize={{ base: "17px", md: "10px", lg: "15px" }}
@@ -100,10 +99,23 @@ function MyChats({ fetchAgain }) {
                 borderRadius={"lg"}
                 key={chat._id}
               >
-                <Text>
+                <Text fontWeight={"bold"}>
                   {!chat.isGroupChat
                     ? getSender(loggedUser, chat.users)
                     : chat.chatName}
+                </Text>
+                <Text fontSize={"small"}>
+                  {chat.latestMessage &&
+                    `${
+                      chat.latestMessage.sender.name &&
+                      chat.latestMessage.sender._id === user._id
+                        ? "You"
+                        : chat.latestMessage.sender.name.split(" ")[0]
+                    }: ${
+                      chat.latestMessage.content.length > 30
+                        ? chat.latestMessage.content.substring(0, 31) + "..."
+                        : chat.latestMessage.content
+                    }`}
                 </Text>
               </Box>
             ))}

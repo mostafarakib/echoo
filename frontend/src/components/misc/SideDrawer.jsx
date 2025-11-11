@@ -190,11 +190,20 @@ function SideDrawer() {
           </Button>
         </Tooltip>
 
-        <Image src={logo} height={"3rem"} alt="echoo logo" />
+        <Image
+          src={logo}
+          height={{ base: "2.4rem", sm: "3rem" }}
+          alt="echoo logo"
+        />
         <div>
           <Menu.Root>
             <Menu.Trigger asChild>
-              <Button variant={"plain"} size="sm" p={"2"} m={"1"}>
+              <Button
+                variant={"plain"}
+                size="sm"
+                p={{ base: "1", sm: "2" }}
+                m={"1"}
+              >
                 <FaBell />
                 {notifications.length > 0 && (
                   <Text
@@ -243,7 +252,12 @@ function SideDrawer() {
           </Menu.Root>
           <Menu.Root>
             <Menu.Trigger asChild>
-              <Button variant={"plain"} size="sm" p={"2"} m={"1"}>
+              <Button
+                variant={"plain"}
+                size="sm"
+                p={{ base: "1", sm: "2" }}
+                m={"1"}
+              >
                 <Avatar.Root size={"sm"}>
                   <Avatar.Fallback name={user.name} />
                   <Avatar.Image src={user.pic} />

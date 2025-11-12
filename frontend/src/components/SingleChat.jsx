@@ -265,17 +265,20 @@ function SingleChat() {
             </IconButton>
             {!selectedChat.isGroupChat ? (
               <>
-                {selectedChat?.users
-                  .find((u) => u._id !== user._id)
-                  .name.toUpperCase()}
+                <span>
+                  {selectedChat?.users
+                    .find((u) => u._id !== user._id)
+                    .name.toUpperCase()}
+                </span>
                 <IconButton
                   variant={"surface"}
-                  marginLeft={"auto"}
                   onClick={() =>
                     dialog.open("viewSender", {
                       title: selectedChat.users
                         .find((u) => u._id !== user._id)
                         .name.toUpperCase(),
+                      size: { base: "xs", sm: "md" },
+                      maxW: { base: "85vw", sm: "xs" },
                       content: (
                         <ProfileDialog
                           user={getFUllSender(user, selectedChat.users)}
@@ -290,10 +293,9 @@ function SingleChat() {
               </>
             ) : (
               <>
-                {selectedChat.chatName.toUpperCase()}
+                <span>{selectedChat.chatName.toUpperCase()}</span>
                 <IconButton
                   variant={"surface"}
-                  marginLeft={"auto"}
                   onClick={() =>
                     dialog.open("updateGroupInfo", {
                       content: (

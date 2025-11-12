@@ -31,8 +31,8 @@ function ScrollableChat({ messages }) {
             key={message._id || index}
             style={{ marginBottom: "10px", display: "flex" }}
           >
-            {(isSameSender(messages, message, index, user._id) ||
-              isLastMessage(messages, index, user._id)) && (
+            {isSameSender(messages, message, index, user._id) ||
+            isLastMessage(messages, index, user._id) ? (
               <Tooltip content={message.sender.name} showArrow>
                 <Avatar.Root
                   size={"sm"}
@@ -44,14 +44,16 @@ function ScrollableChat({ messages }) {
                   <Avatar.Image src={message.sender.pic} />
                 </Avatar.Root>
               </Tooltip>
+            ) : (
+              <div style={{ width: "35px", marginRight: "4px" }} /> // Placeholder for avatar space
             )}
             <span
               style={{
                 backgroundColor: `${
                   message.sender._id === user._id ? "#bee3f8" : "#b9f5d0"
                 }`,
-                borderRadius: "20px",
-                padding: "5px 15px",
+                borderRadius: "25px",
+                padding: "8px 15px",
                 maxWidth: "75%",
                 marginLeft: message.sender._id === user._id ? "auto" : "0",
               }}

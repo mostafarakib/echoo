@@ -14,9 +14,11 @@ function ProfileDialog({ user, onClose }) {
         src={user.pic}
         borderRadius={"full"}
         alt={user.name}
-        boxSize={"150px"}
+        boxSize={{ base: "100px", sm: "150px" }}
       />
-      <Text mt={"4"}>Email: {user.email}</Text>
+      <Text mt={"4"} wordBreak="break-word">
+        Email: {user.email}
+      </Text>
 
       <Button alignSelf={"flex-end"} onClick={() => onClose()}>
         Close

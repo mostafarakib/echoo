@@ -6,7 +6,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
-import { Server } from "socket.io";
+import path from "path";
 import { initSocket } from "./config/socket.js";
 
 dotenv.config();
@@ -17,14 +17,25 @@ app.use(express.json()); // to accept json data
 
 const PORT = process.env.PORT || 5000;
 
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
-
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/notification", notificationRoutes);
+
+// Deployment code
+const __dirname1 = path.resolve();
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "/frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname1, "frontend", "dist", "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.send("Hello, World!");
+  });
+}
+// Deployment code ends
 
 //error handling middlewares
 app.use(notFound);

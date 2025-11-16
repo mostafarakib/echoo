@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node backend/server.js",
     "server": "nodemon backend/server.js",
-    "build": "npm install && npm install --prefix frontend && npx --prefix frontend vite build"
+    "build": "npm install && npm install --prefix frontend && cd frontend && npm run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -5,7 +5,7 @@ import { toaster } from "./ui/create-toaster";
 import { Box, Button, Input, Stack, Text } from "@chakra-ui/react";
 import { IoIosAdd } from "react-icons/io";
 import ChatLoading from "./ChatLoading";
-import { getSender } from "../config/chatLogics.js";
+import { getSender } from "../config/chatLogics";
 import { dialog } from "./ui/dialog";
 import CreateGroupDialog from "./misc/CreateGroupDialog";
 

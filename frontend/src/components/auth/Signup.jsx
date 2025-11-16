@@ -12,6 +12,7 @@ import { LuFileImage } from "react-icons/lu";
 import { toaster } from "../ui/create-toaster";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { ChatState } from "../../context/ChatProvider";
 
 function Signup() {
   const [name, setName] = useState("");
@@ -21,6 +22,8 @@ function Signup() {
   const [pic, setPic] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { setUser } = ChatState();
 
   const postDetails = async (pics) => {
     setLoading(true);
@@ -132,6 +135,7 @@ function Signup() {
       });
 
       localStorage.setItem("userInfo", JSON.stringify(data));
+      setUser(data);
       setLoading(false);
       navigate("/chats");
     } catch (error) {

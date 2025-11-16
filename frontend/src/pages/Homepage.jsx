@@ -42,15 +42,6 @@ function Homepage() {
           src={echooLogo}
           alt="logo"
         />
-
-        {/* <Text
-          textAlign={"center"}
-          fontSize={"4xl"}
-          fontFamily={"Work sans"}
-          fontWeight={300}
-        >
-          
-        </Text> */}
       </Box>
       <Box
         bg={"white"}

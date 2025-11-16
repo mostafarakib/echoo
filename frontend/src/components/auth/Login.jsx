@@ -4,6 +4,7 @@ import { PasswordInput } from "../ui/password-input";
 import { toaster } from "../ui/create-toaster";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { ChatState } from "../../context/ChatProvider";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -11,6 +12,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const { setUser } = ChatState();
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -44,6 +47,7 @@ function Login() {
         closable: true,
       });
       localStorage.setItem("userInfo", JSON.stringify(data));
+      setUser(data);
       setLoading(false);
       navigate("/chats");
     } catch (error) {

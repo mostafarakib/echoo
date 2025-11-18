@@ -13,6 +13,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    extensions: [".js", ".jsx", ".json", ".ts", ".tsx"],
   },
   server: {
     proxy: {

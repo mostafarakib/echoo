@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { isLastMessage, isSameSender } from "../config/chatLogics";
+import { isLastMessage, isSameSender } from "@/config/chatLogics";
 import { ChatState } from "../context/ChatProvider";
 import { Tooltip } from "./ui/tooltip";
 import { Avatar } from "@chakra-ui/react";

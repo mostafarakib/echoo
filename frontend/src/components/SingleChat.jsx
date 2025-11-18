@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ChatState } from "../context/ChatProvider";
 import { Box, IconButton, Input, Spinner, Text } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
-import { getFUllSender } from "../config/chatLogics";
+import { getFUllSender } from "@/config/chatLogics";
 import ProfileDialog from "./misc/ProfileDialog";
 import { dialog } from "./ui/dialog";
 import { MdAssignmentInd } from "react-icons/md";

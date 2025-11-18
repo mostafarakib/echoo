@@ -24,7 +24,7 @@ import axios from "axios";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserListItem";
 import ProfileDialog from "./ProfileDialog";
-import { getSender } from "../../config/chatLogics";
+import { getSender } from "@/config/chatLogics";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");

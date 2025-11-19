@@ -26,7 +26,11 @@ function Homepage() {
     }
   }, [navigate]);
   return (
-    <Container w={"lg"} centerContent>
+    <Container
+      w={{ base: "100%", sm: "90%", md: "container.md", lg: "container.lg" }}
+      maxW="container.lg"
+      centerContent
+    >
       <Box
         justifyContent={"center"}
         p={3}

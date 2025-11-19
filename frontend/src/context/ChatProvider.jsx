@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 
 const ChatContext = createContext();
 const ENDPOINT =
-  import.meta.env.NODE_ENV === "production"
+  import.meta.env.MODE === "production"
     ? window.location.origin
     : "http://localhost:5000";
 

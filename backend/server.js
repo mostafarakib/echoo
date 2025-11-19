@@ -52,6 +52,7 @@ const io = initSocket(server, {
       process.env.NODE_ENV === "production"
         ? process.env.DOMAIN_URL || "*"
         : "http://localhost:5173",
+    credentials: true,
   },
 });
 

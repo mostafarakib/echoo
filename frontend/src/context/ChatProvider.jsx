@@ -4,7 +4,10 @@ import { useNavigate } from "react-router";
 import { io } from "socket.io-client";
 
 const ChatContext = createContext();
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT =
+  import.meta.env.NODE_ENV === "production"
+    ? window.location.origin
+    : "http://localhost:5000";
 
 const ChatProvider = ({ children }) => {
   const [user, setUser] = useState(null);

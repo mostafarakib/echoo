@@ -69,3 +69,11 @@ This project demonstrates production-level architecture, state management, authe
 - MongoDB + Mongoose
 - Socket.io
 - JSON Web Tokens (JWT)
+
+## 📸 Screenshots
+
+<img width="1029" height="834" alt="image" src="https://github.com/user-attachments/assets/8955c9ac-8090-42de-a6c4-1b336375a8cc" />  
+<img width="1919" height="894" alt="image" src="https://github.com/user-attachments/assets/23328e66-6e49-4775-ba6c-fc90226dfdcf" />  
+<img width="1915" height="888" alt="image" src="https://github.com/user-attachments/assets/0e1e5092-8ead-4f3f-b338-6bf05bc021e9" />
+<img width="1915" height="884" alt="image" src="https://github.com/user-attachments/assets/a72371d6-44b7-4536-bc84-5d6f7b676213" />
+<img width="1911" height="884" alt="image" src="https://github.com/user-attachments/assets/255eecce-25a8-4aed-bd12-f9778f660f74" />

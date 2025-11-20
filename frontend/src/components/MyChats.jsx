@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChatState } from "../context/ChatProvider";
 import axios from "axios";
 import { toaster } from "./ui/create-toaster";
@@ -34,8 +34,9 @@ function MyChats({ fetchAgain }) {
   };
 
   useEffect(() => {
-    setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
-    fetchChats();
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    setLoggedUser(userInfo);
+    if (userInfo) fetchChats();
   }, [fetchAgain]);
 
   const onGroupCreateClick = () => {
@@ -46,6 +47,10 @@ function MyChats({ fetchAgain }) {
       ),
     });
   };
+
+  if (!user || !loggedUser) {
+    return <ChatLoading />;
+  }
 
   return (
     <Box

@@ -1,13 +1,30 @@
 import React, { useState } from "react";
 import { ChatState } from "../context/ChatProvider";
-import { Box } from "@chakra-ui/react";
+import { Box, Spinner } from "@chakra-ui/react";
 import SideDrawer from "../components/misc/SideDrawer";
 import MyChats from "../components/MyChats";
 import ChatBox from "../components/ChatBox";
 
 function ChatPage() {
-  const { user } = ChatState();
+  const { user, userLoading } = ChatState();
   const [fetchAgain, setFetchAgain] = useState(false);
+
+  if (userLoading) {
+    return (
+      <Spinner
+        size={"xl"}
+        height={"20"}
+        width={"20"}
+        alignSelf={"center"}
+        margin={"auto"}
+      />
+    );
+  }
+
+  if (!user) {
+    return null; // or a redirect component
+  }
+
   return (
     <div style={{ width: "100%" }}>
       {user && <SideDrawer />}

@@ -27,8 +27,9 @@ function Homepage() {
   }, [navigate]);
   return (
     <Container
-      w={{ base: "100%", sm: "90%", md: "container.md", lg: "container.lg" }}
-      maxW="container.lg"
+      w={{ base: "100%", sm: "90%", md: "container.md", lg: "lg" }}
+      maxW="lg"
+      px={{ base: 4, md: 0 }}
       centerContent
     >
       <Box

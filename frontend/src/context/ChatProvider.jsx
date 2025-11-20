@@ -14,6 +14,7 @@ const ChatProvider = ({ children }) => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chats, setChats] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [userLoading, setUserLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -29,6 +30,7 @@ const ChatProvider = ({ children }) => {
     }
 
     setUser(parsedUserInfo);
+    setUserLoading(false);
 
     if (!parsedUserInfo) {
       navigate("/", { replace: true });
@@ -106,6 +108,7 @@ const ChatProvider = ({ children }) => {
         notifications,
         setNotifications,
         socketRef,
+        userLoading,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import Notification from "../models/notificationModel.js";
+import asyncHandler from "express-async-handler";
 
-const getNotifications = async (req, res) => {
+const getNotifications = asyncHandler(async (req, res) => {
   try {
     const returnAll = String(req.query.all).toLowerCase() === "true";
     const filter = { recipient: req.user._id };
@@ -24,9 +25,9 @@ const getNotifications = async (req, res) => {
     res.status(500);
     throw new Error(error.message);
   }
-};
+});
 
-const markAsRead = async (req, res) => {
+const markAsRead = asyncHandler(async (req, res) => {
   try {
     const { chatId, ids } = req.body;
 
@@ -36,7 +37,7 @@ const markAsRead = async (req, res) => {
           _id: { $in: ids },
           recipient: req.user._id,
         },
-        { $set: { isRead: true } }
+        { $set: { isRead: true } },
       );
       // no early return — continue to fetch remaining unread
     } else if (chatId) {
@@ -45,13 +46,13 @@ const markAsRead = async (req, res) => {
           chat: chatId,
           recipient: req.user._id,
         },
-        { $set: { isRead: true } }
+        { $set: { isRead: true } },
       );
     } else {
       // fallback: mark all for this user as read
       await Notification.updateMany(
         { recipient: req.user._id },
-        { $set: { isRead: true } }
+        { $set: { isRead: true } },
       );
     }
 
@@ -75,6 +76,6 @@ const markAsRead = async (req, res) => {
     res.status(500);
     throw new Error(error.message);
   }
-};
+});
 
 export { getNotifications, markAsRead };

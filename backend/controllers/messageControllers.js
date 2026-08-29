@@ -3,13 +3,14 @@ import User from "../models/userModel.js";
 import Chat from "../models/chatModel.js";
 import Notification from "../models/notificationModel.js";
 import { getIO } from "../config/socket.js";
+import asyncHandler from "express-async-handler";
 
-const sendMessage = async (req, res) => {
+const sendMessage = asyncHandler(async (req, res) => {
   const { content, chatId } = req.body;
 
   if (!content || !chatId) {
-    console.log("Invalid data passed into request");
-    return res.sendStatus(400);
+    res.status(400);
+    throw new Error("Invalid data passed into request");
   }
 
   let newMessage = {
@@ -47,7 +48,7 @@ const sendMessage = async (req, res) => {
 
       const recipientsToNotify = recipients.filter((recipientId) => {
         const userSocket = connectedSockets.find(
-          (s) => String(s.data?.userId) === String(recipientId)
+          (s) => String(s.data?.userId) === String(recipientId),
         );
 
         // only notify if user not viewing this chat
@@ -106,7 +107,7 @@ const sendMessage = async (req, res) => {
 
       allToNotify.forEach((recipientId) => {
         const insertedForThis = insertedNotifs.find(
-          (n) => String(n.recipient) === String(recipientId)
+          (n) => String(n.recipient) === String(recipientId),
         );
         const payload = {
           _id: insertedForThis
@@ -132,9 +133,9 @@ const sendMessage = async (req, res) => {
     res.status(400);
     throw new Error(error.message);
   }
-};
+});
 
-const allMessages = async (req, res) => {
+const allMessages = asyncHandler(async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
       .populate("sender", "name pic email")
@@ -145,6 +146,6 @@ const allMessages = async (req, res) => {
     res.status(400);
     throw new Error(error.message);
   }
-};
+});
 
 export { sendMessage, allMessages };

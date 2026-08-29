@@ -1,7 +1,8 @@
 import User from "../models/userModel.js";
-import generateToken from "../config/generateToken.js";
+import generateTokenAndSetCookie from "../config/generateToken.js";
+import asyncHandler from "express-async-handler";
 
-const registerUser = async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, pic } = req.body;
 
   if (!name || !email || !password) {
@@ -19,40 +20,55 @@ const registerUser = async (req, res) => {
   const user = await User.create({ name, email, password, pic });
 
   if (user) {
+    generateTokenAndSetCookie(res, user._id);
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       pic: user.pic,
-      token: generateToken(user._id),
     });
   } else {
     res.status(400);
     throw new Error("Failed to create the user");
   }
-};
+});
 
-const authUser = async (req, res) => {
+const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
+    generateTokenAndSetCookie(res, user._id);
+
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       pic: user.pic,
-      token: generateToken(user._id),
     });
   } else {
     res.status(401);
     throw new Error("Invalid email or password");
   }
-};
+});
+
+const logoutUser = asyncHandler(async (req, res) => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
+const getMe = asyncHandler(async (req, res) => {
+  res.status(200).json(req.user);
+});
 
 // /api/user?search=rakib
-const allUsers = async (req, res) => {
+const allUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search
     ? {
         $or: [
@@ -63,6 +79,8 @@ const allUsers = async (req, res) => {
     : {};
 
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+
   res.send(users);
-};
-export { registerUser, authUser, allUsers };
+});
+
+export { registerUser, authUser, logoutUser, getMe, allUsers };

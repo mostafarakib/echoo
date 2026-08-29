@@ -8,12 +8,24 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 import path from "path";
 import { initSocket } from "./config/socket.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import jwt from "jsonwebtoken";
+import User from "./models/userModel.js";
 
 dotenv.config();
-
 connectDB();
+
 const app = express();
-app.use(express.json()); // to accept json data
+
+const allowedOrigin =
+  process.env.NODE_ENV === "production"
+    ? process.env.CLIENT_URL
+    : "http://localhost:3000";
+
+app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(express.json());
+app.use(cookieParser());
 
 const PORT = process.env.PORT || 5000;
 
@@ -22,22 +34,9 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/notification", notificationRoutes);
 
-// Deployment code
-const __dirname1 = path.resolve();
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "/frontend/dist")));
+app.get("/", (req, res) => res.send("API is running"));
 
-  app.get(/.*/, (req, res) => {
-    res.sendFile(path.resolve(__dirname1, "frontend", "dist", "index.html"));
-  });
-} else {
-  app.get("/", (req, res) => {
-    res.send("Hello, World!");
-  });
-}
-// Deployment code ends
-
-//error handling middlewares
+// error handling middlewares
 app.use(notFound);
 app.use(errorHandler);
 
@@ -48,23 +47,34 @@ const server = app.listen(PORT, () => {
 const io = initSocket(server, {
   pingTimeout: 60000,
   cors: {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? process.env.DOMAIN_URL || "*"
-        : "http://localhost:5173",
+    origin: allowedOrigin,
     credentials: true,
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("Connected to socket.io");
+io.use(async (socket, next) => {
+  try {
+    const rawCookies = socket.handshake.headers.cookie;
+    if (!rawCookies) return next(new Error("Authentication error"));
 
-  socket.on("setup", (userData) => {
-    if (!userData || !userData._id) return;
-    socket.join(userData._id);
-    socket.data.userId = String(userData._id);
-    socket.emit("connected");
-  });
+    const parsed = cookie.parse(rawCookies);
+    const token = parsed.jwt;
+    if (!token) return next(new Error("Authentication error"));
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) return next(new Error("Authentication error"));
+
+    socket.data.userId = String(user._id);
+    next();
+  } catch (err) {
+    next(new Error("Authentication error"));
+  }
+});
+
+io.on("connection", (socket) => {
+  console.log("Connected to socket.io", socket.data.userId);
+  socket.join(socket.data.userId);
 
   socket.on("join chat", (room) => {
     socket.join(room);
@@ -82,14 +92,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("typing", (room, senderId) =>
-    socket.to(room).emit("typing", { room, senderId })
+    socket.to(room).emit("typing", { room, senderId }),
   );
   socket.on("stop typing", (room, senderId) =>
-    socket.to(room).emit("stop typing", { room, senderId })
+    socket.to(room).emit("stop typing", { room, senderId }),
   );
 
   socket.on("new message", (newMessage) => {
-    let chat = newMessage.chat;
+    const chat = newMessage.chat;
 
     if (!chat.users) return console.log("chat.users not defined");
 

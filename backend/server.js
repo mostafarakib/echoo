@@ -12,6 +12,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import User from "./models/userModel.js";
+import { parseCookie } from "cookie";
 
 dotenv.config();
 connectDB();
@@ -57,7 +58,7 @@ io.use(async (socket, next) => {
     const rawCookies = socket.handshake.headers.cookie;
     if (!rawCookies) return next(new Error("Authentication error"));
 
-    const parsed = cookie.parse(rawCookies);
+    const parsed = parseCookie(rawCookies);
     const token = parsed.jwt;
     if (!token) return next(new Error("Authentication error"));
 

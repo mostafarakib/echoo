@@ -1,28 +1,41 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { Socket } from "socket.io-client";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useSyncExternalStore,
+} from "react";
+import type { Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
-import { connectSocket, disconnectSocket } from "@/lib/socket/socket-manager";
+import {
+  connectSocket,
+  disconnectSocket,
+  subscribeSocket,
+  getSocketSnapshot,
+} from "@/lib/socket/socket-manager";
 
 const SocketContext = createContext<Socket | null>(null);
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      setSocket(connectSocket());
-    }
-    return () => {
-      disconnectSocket();
-      setSocket(null);
-    };
+    if (!isAuthenticated) return;
+    connectSocket();
+    return () => disconnectSocket();
   }, [isAuthenticated]);
 
+  const socket = useSyncExternalStore(
+    subscribeSocket,
+    getSocketSnapshot,
+    () => null,
+  );
+
   return (
-    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={isAuthenticated ? socket : null}>
+      {children}
+    </SocketContext.Provider>
   );
 }
 

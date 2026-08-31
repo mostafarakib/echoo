@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserListItem } from "@/components/shared/UserListItem";
 import { SelectedUserChip } from "@/components/shared/SelectedUserChip";
-import { useSearchUsers } from "@/lib/hooks/useUsers";
+import { useSearchUsers } from "@/hooks/useUsers";
 import {
   useRenameGroup,
   useAddToGroup,
   useRemoveFromGroup,
-} from "@/lib/hooks/useGroupActions";
-import { useAuth } from "@/lib/hooks/useAuth";
+} from "@/hooks/useGroupActions";
+import { useAuth } from "@/hooks/useAuth";
 import { useChatUIStore } from "@/stores/chat-ui-store";
 import { Chat } from "@/types/chat";
 

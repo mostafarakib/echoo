@@ -20,7 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { loginSchema, LoginFormValues } from "@/lib/validations/auth";
 import { getApiErrorMessage } from "@/types/api";
 
-const GUEST_EMAIL = "guest@example.com";
+const GUEST_EMAIL = "guest@gmail.com";
 const GUEST_PASSWORD = "guest@321123";
 
 export function LoginForm() {

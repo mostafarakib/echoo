@@ -1,7 +1,5 @@
-import React from "react";
+import { ChatLayout } from "@/components/chat/ChatLayout";
 
-function page() {
-  return <div>page</div>;
+export default function ChatsPage() {
+  return <ChatLayout />;
 }
-
-export default page;

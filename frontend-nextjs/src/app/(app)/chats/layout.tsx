@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
+import { SocketProvider } from "@/providers/SocketProvider";
 
 export default function ChatsLayout({
   children,
@@ -39,9 +40,11 @@ export default function ChatsLayout({
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex h-screen flex-col">
-      <Navbar />
-      {children}
-    </div>
+    <SocketProvider>
+      <div className="flex h-screen flex-col">
+        <Navbar />
+        {children}
+      </div>
+    </SocketProvider>
   );
 }

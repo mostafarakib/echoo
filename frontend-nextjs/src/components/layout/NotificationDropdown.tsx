@@ -37,7 +37,12 @@ export function NotificationDropdown() {
           "relative",
         )}
       >
-        <Bell className="h-5 w-5" />
+        <Bell
+          className={cn(
+            "h-5 w-5",
+            notifications.length > 0 && "animate-wiggle",
+          )}
+        />
         {notifications.length > 0 && (
           <Badge className="absolute -right-1 -top-1 h-5 w-5 justify-center rounded-full p-0 text-xs">
             {notifications.length}

@@ -29,7 +29,7 @@ export function ChatHeader({
 
   return (
     <>
-      <div className="flex items-center justify-between border-b p-3">
+      <div className="flex items-center justify-between border-b bg-background p-3">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"

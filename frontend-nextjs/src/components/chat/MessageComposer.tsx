@@ -3,10 +3,10 @@
 import { useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useSendMessage } from "@/hooks/useSendMessages";
 import { useSocket } from "@/providers/SocketProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { motion } from "motion/react";
 
 const TYPING_TIMER_LENGTH = 3000;
 
@@ -65,7 +65,7 @@ export function MessageComposer({ chatId }: { chatId: string }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 border-t p-3"
+      className="flex items-center gap-2 border-t bg-background p-3"
     >
       <Input
         placeholder="Type a message..."
@@ -73,13 +73,14 @@ export function MessageComposer({ chatId }: { chatId: string }) {
         onChange={handleChange}
         autoComplete="off"
       />
-      <Button
+      <motion.button
         type="submit"
-        size="icon"
+        whileTap={{ scale: 0.85, rotate: -15 }}
         disabled={sendMessage.isPending || !content.trim()}
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
       >
         <Send className="h-4 w-4" />
-      </Button>
+      </motion.button>
     </form>
   );
 }

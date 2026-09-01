@@ -42,7 +42,15 @@ export function MessageList({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+    <div
+      className="flex flex-1 flex-col gap-3 overflow-y-auto p-4"
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='380' height='380'%3E%3Cdefs%3E%3Cpath id='b' d='M0 0 h12 a3 3 0 0 1 3 3 v7 a3 3 0 0 1 -3 3 h-6 l-3 3 v-3 h-1 a3 3 0 0 1 -3 -3 v-7 a3 3 0 0 1 3 -3 z'/%3E%3C/defs%3E%3Cg fill='none' stroke='%239CA3AF' stroke-width='1.4' opacity='0.4'%3E%3Cuse href='%23b' transform='translate(40 50) rotate(-10)'/%3E%3Cuse href='%23b' transform='translate(230 30) rotate(8)'/%3E%3Cuse href='%23b' transform='translate(120 150) rotate(-6)'/%3E%3Cuse href='%23b' transform='translate(20 250) rotate(14)'/%3E%3Cuse href='%23b' transform='translate(260 220) rotate(-12)'/%3E%3C/g%3E%3C/svg%3E\")",
+        backgroundRepeat: "repeat",
+        backgroundSize: "380px 380px",
+      }}
+    >
       {groupMessages(messages).map((group) => (
         <MessageGroup
           key={group[0]._id}

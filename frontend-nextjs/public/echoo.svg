@@ -1,0 +1,7 @@
+<svg width="250" height="80" viewBox="0 0 250 80" xmlns="http://www.w3.org/2000/svg">
+  <text x="90" y="55" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="#2563eb" text-anchor="middle">echo</text>
+  <text x="132" y="55" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="#60a5fa" text-anchor="start">o</text>
+  
+  <text x="157" y="53" font-family="Inter, sans-serif" font-size="26" font-weight="800" fill="#60a5fa" text-anchor="start">)</text>
+  <text x="168" y="54" font-family="Inter, sans-serif" font-size="34" font-weight="800" fill="#60a5fa" text-anchor="start">)</text>
+</svg>

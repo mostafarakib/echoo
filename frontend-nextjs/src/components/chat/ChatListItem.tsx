@@ -37,8 +37,10 @@ export function ChatListItem({
     <button
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
-        isSelected ? "bg-primary text-primary-foreground" : "hover:bg-accent",
+        "flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-all duration-200 hover:scale-[1.01]",
+        isSelected
+          ? "bg-primary text-primary-foreground"
+          : "hover:bg-accent/10",
       )}
     >
       <Avatar className="h-10 w-10 shrink-0">

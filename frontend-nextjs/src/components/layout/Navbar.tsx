@@ -14,6 +14,7 @@ import { ChatSearch } from "@/components/chat/ChatSearch";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -35,7 +36,14 @@ export function Navbar() {
         </SheetContent>
       </Sheet>
 
-      <span className="text-xl font-bold tracking-tight">Echoo</span>
+      <Image
+        src="/echoo.png"
+        alt="logo"
+        width={150}
+        height={64}
+        className="w-30 md:w-37.5 h-auto"
+        loading="eager"
+      />
 
       <div className="flex items-center gap-2">
         <NotificationDropdown />

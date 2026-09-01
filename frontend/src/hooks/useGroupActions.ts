@@ -30,9 +30,12 @@ export function useAddToGroup() {
 
 export function useRemoveFromGroup() {
   const queryClient = useQueryClient();
+  const setSelectedChat = useChatUIStore((s) => s.setSelectedChat);
   return useMutation({
     mutationFn: removeFromGroup,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: CHATS_QUERY_KEY }),
+    onSuccess: (chat) => {
+      setSelectedChat(chat);
+      queryClient.invalidateQueries({ queryKey: CHATS_QUERY_KEY });
+    },
   });
 }

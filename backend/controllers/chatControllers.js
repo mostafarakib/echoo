@@ -166,11 +166,13 @@ const removeFromGroup = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Chat not found" });
     }
 
-    // ensure requester is admin
-    if (chat.groupAdmin._id.toString() !== req.user._id.toString()) {
+    const isSelf = userId === req.user._id.toString();
+    const isAdmin = chat.groupAdmin._id.toString() === req.user._id.toString();
+
+    if (!isSelf && !isAdmin) {
       return res
         .status(403)
-        .json({ message: "Only admins can remove member!" });
+        .json({ message: "Only admins can remove members!" });
     }
 
     // remove user from chat

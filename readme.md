@@ -1,79 +1,54 @@
-# Echoo – Real-Time Chat Application
+# Echoo 
 
-A full-stack, real-time messaging application built with **React, Node.js, Express, MongoDB, and Socket.io.**  
-Echoo supports instant messaging, dynamic notifications, group chats, and a clean modern UI built with **Chakra UI**.  
-This project demonstrates production-level architecture, state management, authentication flows, and real-time WebSocket communication.
+A real-time chat app - think of a lightweight Discord/Messenger. Built solo, end to end: auth, live messaging, group chats, notifications, all wired together with sockets.
 
-## 🚀 Live Demo
+## Live app: [https://echoo-chat.vercel.app](https://echoo-chat.vercel.app)
 
-🔗 **Frontend (Static Hosting)**: [Click here](https://echoo-c9pm.onrender.com/)  
-🔗 **Backend API**: [Click here](https://echoo-c9pm.onrender.com/)
+## What it does
 
-## Features
-
-### 🔐 Authentication
-
-- JWT-based secure login & signup
-- Persistent user sessions
-- Protected routes on both frontend & backend
-
-### Real-Time Messaging
-
-- One-to-one & group chats
-- Instant message delivery via Socket.io
+- Sign up / log in with secure, cookie-based auth
+- One-on-one and group chats
+- Messages arrive instantly — no refreshing, powered by Socket.io
 - Typing indicators
+- Live notifications for new messages, even when you're not in that chat
+- Create groups, rename them, add/remove members, leave a group
+- Search for users to start a new conversation
 
-### 🔔 Smart Notifications
 
-- Real-time notifications for new messages
-- Backend-merged notifications → only last message per sender shown
-- No notification if the chat with sender is already active
-- Auto-update and replace when new message comes
+## Tech Stack
 
-### 👥 Chat Management
+**Frontend** — Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, React Query, Zustand, Motion, Socket.io Client
 
-- Search users
-- Create group chats
-- Rename group
-- Add/remove users from group
-- Latest message preview
+**Backend** — Node.js, Express, MongoDB, Socket.io, JWT (httpOnly cookies)
 
-### 🎨 Modern UI
+**Deployed on** Vercel (frontend) + Render (backend) + MongoDB Atlas
 
-- Built with Chakra UI
-- Responsive SideDrawer
-- Clean chat layout
-- Smooth UX
+## A bit about the build
 
-### ☁️ Deployment
+The backend and frontend live in this repo but deploy separately. Auth uses httpOnly cookies rather than tokens in local storage, and the Socket.io connection is authenticated at the handshake — not something the client can spoof by just sending a user ID.
 
-- Backend deployed on Render
-- Frontend built with Vite and served via Render Static Site
-- Automatic build pipeline for frontend from root package.json
+The frontend went through a full rebuild from an earlier React + Chakra UI version into Next.js and TypeScript, which is part of why the code is organized the way it is — API layer, hooks, and state are kept in separate, clearly scoped folders rather than everything living inside components.
 
-## 🛠️ Tech Stack
+## Running it locally
 
-### Frontend
+```bash
+# backend
+npm install
+npm run server   # http://localhost:5000
 
-- React 19
-- Vite
-- Chakra UI
-- React Router
-- Axios
-- Socket.io Client
+# frontend
+cd frontend
+npm install
+npm run dev       # http://localhost:3000
+```
 
-### Backend
-
-- Node.js
-- Express
-- MongoDB + Mongoose
-- Socket.io
-- JSON Web Tokens (JWT)
+You'll need a `.env` in root folder (Mongo URI, JWT secret, client URL) and a `.env.local` in `frontend` (API URL, Cloudinary keys if you want profile picture uploads working).
 
 ## 📸 Screenshots
 
-<img width="1029" height="834" alt="image" src="https://github.com/user-attachments/assets/8955c9ac-8090-42de-a6c4-1b336375a8cc" />  
-<img width="1919" height="894" alt="image" src="https://github.com/user-attachments/assets/23328e66-6e49-4775-ba6c-fc90226dfdcf" />  
-<img width="1915" height="888" alt="image" src="https://github.com/user-attachments/assets/0e1e5092-8ead-4f3f-b338-6bf05bc021e9" />
-<img width="1915" height="884" alt="image" src="https://github.com/user-attachments/assets/a72371d6-44b7-4536-bc84-5d6f7b676213" />
-<img width="1911" height="884" alt="image" src="https://github.com/user-attachments/assets/255eecce-25a8-4aed-bd12-f9778f660f74" />
+<img width="1912" height="885" alt="image" src="https://github.com/user-attachments/assets/e18a6a56-0545-4f47-bb8c-b023fd452260" />
+<img width="1914" height="884" alt="image" src="https://github.com/user-attachments/assets/ac170c7c-36bf-4c0c-8d89-51d40b56c172" />
+<img width="1908" height="888" alt="image" src="https://github.com/user-attachments/assets/fc1504a8-9d4b-4bb5-a3e2-c4fb6dd8b596" />
+<img width="1918" height="887" alt="image" src="https://github.com/user-attachments/assets/2e372773-a892-43a4-8346-53b6d6029768" />
+<img width="1897" height="886" alt="image" src="https://github.com/user-attachments/assets/5968a1e5-cf12-4ce1-9c51-672955f7aab6" />
+

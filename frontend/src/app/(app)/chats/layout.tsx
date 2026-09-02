@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
 import { SocketProvider } from "@/providers/SocketProvider";
@@ -12,22 +12,17 @@ export default function ChatsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoading, isAuthenticated, logout, currentUserQuery } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    if (isLoading) return;
-
+    if (isLoading || hasRedirected.current) return;
     if (!isAuthenticated) {
-      if (currentUserQuery.isError) {
-        logout.mutate(undefined, {
-          onSettled: () => router.replace("/login"),
-        });
-      } else {
-        router.replace("/login");
-      }
+      hasRedirected.current = true;
+      router.replace("/login");
     }
-  }, [isLoading, isAuthenticated, logout, currentUserQuery.isError, router]);
+  }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return (

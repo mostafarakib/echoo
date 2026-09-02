@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import { apiClient } from "./client";
 import { User } from "@/types/user";
 
@@ -27,7 +28,14 @@ export const logout = async (): Promise<void> => {
   await apiClient.post("/api/user/logout");
 };
 
-export const getMe = async (): Promise<User> => {
-  const { data } = await apiClient.get("/api/user/me");
-  return data;
+export const getMe = async (): Promise<User | null> => {
+  try {
+    const { data } = await apiClient.get<User>("/api/user/me");
+    return data;
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.status === 401) {
+      return null; // not logged in — a normal, valid state, not an error
+    }
+    throw err; // real failures (backend down, 500, etc.)
+  }
 };

@@ -1,12 +1,22 @@
 import Link from "next/link";
 import { SignupForm } from "@/components/auth/SignupForm";
+import { GuestOnly } from "@/components/auth/GuestOnly";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 
 export default function SignupPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4">
-      <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-sm">
+    <GuestOnly>
+      <AuthLayout>
+        <div className="mb-6 flex flex-col gap-1">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Create your account
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Join Echoo and start chatting in seconds.
+          </p>
+        </div>
         <SignupForm />
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link
             href="/login"
@@ -15,7 +25,7 @@ export default function SignupPage() {
             Login
           </Link>
         </p>
-      </div>
-    </div>
+      </AuthLayout>
+    </GuestOnly>
   );
 }
